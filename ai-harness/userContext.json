@@ -1,0 +1,83 @@
+{
+  "userId": "cp_enthusiast_42",
+  "profile": {
+    "name": "Alex Kim",
+    "age": 21,
+    "country": "India",
+    "education": "B.Tech Computer Science, IIT Bombay",
+    "languages": ["C++", "Python", "JavaScript"],
+    "platforms": ["Codeforces", "AtCoder", "LeetCode", "CodeChef"]
+  },
+  "strong_areas": [
+    "data structures",
+    "dynamic programming",
+    "number theory",
+    "greedy algorithms"
+  ],
+  "weak_areas": [
+    "geometry",
+    "probability",
+    "game theory"
+  ],
+  "learning_goals": [
+    "Master advanced graph algorithms",
+    "Improve speed in Div. 1 contests",
+    "Learn segment trees with lazy propagation",
+    "Get better at combinatorics"
+  ],
+  "contest_history": [
+    {
+      "platform": "Codeforces",
+      "handle": "alexk42",
+      "rating": 1920,
+      "maxRating": 2010,
+      "rank": "Candidate Master",
+      "recentContests": [
+        {"name": "Codeforces Round #900", "rank": 112, "solved": 4, "ratingChange": 45},
+        {"name": "Codeforces Round #899", "rank": 320, "solved": 3, "ratingChange": -17}
+      ]
+    },
+    {
+      "platform": "AtCoder",
+      "handle": "alexk_atc",
+      "rating": 1680,
+      "maxRating": 1720,
+      "rank": "Yellow",
+      "recentContests": [
+        {"name": "ABC 350", "rank": 210, "solved": 3, "ratingChange": 12}
+      ]
+    }
+  ],
+  "practice_stats": {
+    "totalProblemsSolved": 1200,
+    "last30Days": 45,
+    "averageDaily": 1.5,
+    "topicsPracticed": {
+      "dp": 320,
+      "graphs": 180,
+      "math": 150,
+      "strings": 110
+    }
+  },
+  "favorite_problems": [
+    {
+      "title": "Codeforces 1234D - Distinct Characters Queries",
+      "tags": ["strings", "data structures"],
+      "difficulty": "1600"
+    },
+    {
+      "title": "AtCoder ABC 200 F - Range Set Query",
+      "tags": ["segment tree", "implementation"],
+      "difficulty": "1800"
+    }
+  ],
+  "history": [
+    {"date": "2026-04-17", "event": "Solved 3 problems on Codeforces"},
+    {"date": "2026-04-16", "event": "Practiced geometry on AtCoder"}
+  ],
+  "preferences": {
+    "preferredLanguage": "C++",
+    "showHints": false,
+    "targetRating": 2100
+  }
+}

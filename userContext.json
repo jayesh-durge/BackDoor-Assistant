@@ -1,0 +1,92 @@
+{
+  "userId": "cp_123456",
+  "profile": {
+    "name": "Alex Kim",
+    "handle": "alexk_cp",
+    "country": "South Korea",
+    "age": 21,
+    "experienceYears": 4,
+    "preferredLanguages": ["C++", "Python"],
+    "currentRating": 2120,
+    "maxRating": 2250,
+    "organization": "KAIST"
+  },
+  "contestHistory": [
+    {
+      "platform": "Codeforces",
+      "contests": [
+        {
+          "id": 1789,
+          "name": "Codeforces Round #850",
+          "rank": 112,
+          "ratingChange": 45,
+          "date": "2026-03-12"
+        },
+        {
+          "id": 1775,
+          "name": "Codeforces Round #845",
+          "rank": 210,
+          "ratingChange": -12,
+          "date": "2026-02-20"
+        }
+      ]
+    },
+    {
+      "platform": "AtCoder",
+      "contests": [
+        {
+          "id": 350,
+          "name": "AtCoder Beginner Contest 350",
+          "rank": 58,
+          "ratingChange": 32,
+          "date": "2026-01-15"
+        }
+      ]
+    }
+  ],
+  "submissionPatterns": {
+    "averageSubmissionsPerContest": 7.2,
+    "averageAcceptedPerContest": 4.8,
+    "languagesUsed": {
+      "C++": 0.7,
+      "Python": 0.3
+    },
+    "peakSubmissionTimes": ["20:00-22:00", "10:00-12:00"],
+    "commonVerdicts": {
+      "Accepted": 0.68,
+      "Wrong Answer": 0.18,
+      "Time Limit Exceeded": 0.09,
+      "Runtime Error": 0.05
+    }
+  },
+  "weakAreas": [
+    "geometry",
+    "number theory",
+    "interactive problems"
+  ],
+  "strongAreas": [
+    "dynamic programming",
+    "graphs",
+    "data structures"
+  ],
+  "codingStyle": {
+    "variableNaming": "camelCase",
+    "indentation": "4_spaces",
+    "templateUsage": true,
+    "commenting": "concise",
+    "codeLengthPreference": "short"
+  },
+  "learningGoals": [
+    "Improve number theory problem solving",
+    "Practice geometry algorithms",
+    "Reduce careless mistakes in implementation",
+    "Reach 2300 rating by end of year"
+  ],
+  "performanceMetrics": {
+    "averageSolveTimeMinutes": 23.5,
+    "fastestSolveTimeMinutes": 4.2,
+    "recentAccuracy": 0.74,
+    "upsolvedProblemsLastMonth": 12,
+    "streakDays": 15
+  }
+}

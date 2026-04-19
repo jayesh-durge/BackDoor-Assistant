@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OpenRouter Streaming Chat</title>
+
+<style>
+body {
+font-family: Arial, sans-serif;
+background: #0f0f0f;
+color: white;
+margin: 0;
+display: flex;
+flex-direction: column;
+height: 100vh;
+}
+
+.chat-container {
+flex: 1;
+overflow-y: auto;
+padding: 20px;
+}
+
+.message {
+margin-bottom: 20px;
+line-height: 1.5;
+}
+
+.user {
+color: #4fc3f7;
+}
+
+.assistant {
+color: #81c784;
+}
+
+.input-container {
+display: flex;
+padding: 15px;
+background: #1a1a1a;
+border-top: 1px solid #333;
+}
+
+input {
+flex: 1;
+padding: 12px;
+background: #111;
+border: 1px solid #333;
+color: white;
+border-radius: 6px;
+outline: none;
+}
+
+button {
+margin-left: 10px;
+padding: 12px 20px;
+background: #ffd600;
+border: none;
+border-radius: 6px;
+cursor: pointer;
+font-weight: bold;
+}
+
+button:hover {
+background: #ffea00;
+}
+</style>
+</head>
+
+<body>
+
+
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 0 20px 10px 20px;">
+	<div></div>
+	<button id="clearBtn" style="background:#222; color:#ffd600; border:none; border-radius:6px; padding:8px 16px; cursor:pointer; font-weight:bold;">Clear Chat</button>
+</div>
+<div class="chat-container" id="chat"></div>
+
+
+<form class="input-container">
+	<input id="input" placeholder="Ask something..." autocomplete="off" />
+	<button type="submit">Send</button>
+</form>
+
+<script>
+
+
+
+// sendMessage: handles chat send, always prevents form reload
+async function sendMessage(event) {
+	if (event) event.preventDefault();
+	const input = document.getElementById("input");
+	const chat = document.getElementById("chat");
+
+	const message = input.value;
+	if (!message.trim()) {
+		console.log("Empty message, aborting");
+		return;
+	}
+	// Block code-like messages (function definitions, curly braces, etc.)
+	if (/function\s+\w+\s*\(|\{[^}]*\}|=>|const\s+\w+\s*=\s*\(/.test(message)) {
+		alert("Code-like messages are not allowed in chat.");
+		return;
+	}
+	input.value = "";
+
+	appendMessage("user", message);
+	const assistantDiv = appendMessage("assistant", "");
+
+	// Call backend API
+	try {
+		const response = await fetch("http://localhost:3000/api/ask", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({ question: message })
+		});
+		console.log("API response status:", response.status);
+		if (!response.ok) {
+			assistantDiv.textContent = "[Error: Backend unavailable]";
+			return;
+		}
+		const data = await response.json();
+		console.log("API response data:", data);
+		if (data.response) {
+			assistantDiv.textContent = data.response;
+		} else if (data.error) {
+			assistantDiv.textContent = `[Error: ${data.error}]`;
+		} else {
+			assistantDiv.textContent = "[No response]";
+		}
+		chat.scrollTop = chat.scrollHeight;
+	} catch (e) {
+		console.error("Network or fetch error", e);
+		assistantDiv.textContent = "[Network error]";
+	}
+}
+
+document.getElementById('clearBtn').onclick = function() {
+	const chat = document.getElementById('chat');
+	chat.innerHTML = '';
+};
+
+// Attach submit event listener in JS (robust, never reloads)
+document.querySelector('form.input-container').addEventListener('submit', sendMessage);
+</script>
+
+<script>
+// Global error handler for debugging
+window.addEventListener('error', function(event) {
+	console.error('Global JS error:', event.message, event.filename, event.lineno);
+});
+
+function appendMessage(role, text) {
+	const chat = document.getElementById("chat");
+	const div = document.createElement("div");
+	div.className = "message " + role;
+	div.textContent = text;
+	chat.appendChild(div);
+	chat.scrollTop = chat.scrollHeight;
+	return div;
+}
+
+</script>
+
+</body>
+</html>
