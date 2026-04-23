@@ -10,15 +10,15 @@
  * @returns {Object} Retrieved memory
  */
 
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 
 // Simple semantic similarity: token overlap (replace with embeddings for production)
-function semanticSimilarity(a, b) {
-  const aTokens = new Set(a.toLowerCase().split(/\W+/));
-  const bTokens = new Set(b.toLowerCase().split(/\W+/));
-  const overlap = [...aTokens].filter(t => bTokens.has(t));
-  return overlap.length / Math.max(aTokens.size, 1);
+function semanticSimilarity(query, text, category) {
+  const qTokens = new Set(query.toLowerCase().split(/\W+/).filter(Boolean));
+  const tTokens = new Set(`${category} ${text}`.toLowerCase().split(/\W+/).filter(Boolean));
+  const overlap = [...qTokens].filter(t => tTokens.has(t));
+  return overlap.length / Math.max(qTokens.size, 1);
 }
 
 /**
@@ -33,32 +33,39 @@ async function memoryRetriever({ query, memoryPath, topK = 2 }) {
   const filePath = memoryPath || path.join(__dirname, '../memory.json');
   let memory = {};
   try {
-    memory = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    const data = await fs.readFile(filePath, 'utf8');
+    memory = JSON.parse(data);
   } catch (e) {
     memory = {};
   }
 
   const categories = [
-    'user_profile',
-    'preferences',
-    'projects',
     'skills',
+    'interests',
+    'projects',
+    'preferences',
     'goals',
-    'long_term_memory',
+    'user_profile',
     'conversation_summary'
   ];
 
   const relevant = {};
   for (const cat of categories) {
     const items = memory[cat];
-    if (!items) continue;
+    if (!items || !items.length) continue;
     const arr = Array.isArray(items) ? items : [items];
     const scored = arr.map(item => {
       const text = typeof item === 'string' ? item : JSON.stringify(item);
-      return { item, score: semanticSimilarity(query, text) };
+      return { item, score: semanticSimilarity(query, text, cat) };
     });
-    scored.sort((a, b) => b.score - a.score);
-    relevant[cat] = scored.slice(0, topK).map(s => s.item);
+    
+    // Filter memory relevant to user_message (score > 0)
+    const filtered = scored.filter(s => s.score > 0);
+    filtered.sort((a, b) => b.score - a.score);
+    
+    if (filtered.length > 0) {
+      relevant[cat] = filtered.slice(0, topK).map(s => s.item);
+    }
   }
   return relevant;
 }
@@ -71,17 +78,6 @@ module.exports = memoryRetriever;
 //     query: 'What are my Python projects and goals?',
 //     memoryPath: path.join(__dirname, '../memory.json'),
 //     topK: 2
-//   });
-//   console.log(result);
-// })();
-
-module.exports = memoryRetriever;
-
-// Example usage:
-// (async () => {
-//   const result = await memoryRetriever({
-//     required_memory: ['profile', 'goals'],
-//     memoryStore: { profile: { name: 'Jay' }, goals: ['Learn Python'] }
 //   });
 //   console.log(result);
 // })();

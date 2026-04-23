@@ -53,7 +53,7 @@ async function aiHarness({ userMessage, conversation = [], availableFunctions = 
       userMessage,
       memory: trace.memory,
       conversationSummary: trace.conversationSummary.conversation_summary || '',
-      recentMessages: conversation.slice(-5),
+      recentMessages: conversation.slice(-6),
       functionResults: trace.functionResults
     });
 
@@ -65,10 +65,11 @@ async function aiHarness({ userMessage, conversation = [], availableFunctions = 
       functionResults: trace.functionResults
     });
 
-    // 8. Memory Extractor
-    trace.extractedMemory = memoryExtractor({
+    // 8. Memory Extractor — semantic LLM call, needs the actual AI response text
+    trace.extractedMemory = await memoryExtractor({
       userMessage,
-      context: trace.context
+      aiResponse: trace.response,
+      conversationHistory: trace.context.recent_messages || []
     });
 
     // 9. Memory Compressor

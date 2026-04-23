@@ -32,7 +32,7 @@ function contextBuilder({ userMessage, memory = {}, conversationSummary = '', re
     user_message: userMessage,
     memory: compressedMemory,
     conversation_summary: conversationSummary,
-    recent_messages: dedup(recentMessages.map(m => `[${m.role}] ${m.content}`)).slice(-5),
+    recent_messages: dedup(recentMessages.map(m => `[${m.role}] ${m.content}`)).slice(-6),
     function_results: functionResults
   };
 

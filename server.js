@@ -25,7 +25,7 @@ app.post('/api/ask', async (req, res) => {
     // For demo: fallback to empty or default values if not provided
     const result = await mainHarness({
       userMessage: question.trim(),
-      conversation: Array.isArray(conversation) ? conversation : [],
+      conversation: Array.isArray(conversation) ? conversation.slice(-6) : [],
       availableFunctions: Array.isArray(availableFunctions) ? availableFunctions : [],
       functionRegistry: typeof functionRegistry === 'object' && functionRegistry !== null ? functionRegistry : {},
       memoryStore: typeof memoryStore === 'object' && memoryStore !== null ? memoryStore : {}
