@@ -85,65 +85,69 @@ background: #ffea00;
 
 <script>
 
+// In-memory conversation history — persists across turns within one browser session
+let conversationHistory = [];
 
-
-// sendMessage: handles chat send, always prevents form reload
 async function sendMessage(event) {
 	if (event) event.preventDefault();
 	const input = document.getElementById("input");
 	const chat = document.getElementById("chat");
 
-	const message = input.value;
-	if (!message.trim()) {
-		console.log("Empty message, aborting");
-		return;
-	}
-	// Block code-like messages (function definitions, curly braces, etc.)
-	if (/function\s+\w+\s*\(|\{[^}]*\}|=>|const\s+\w+\s*=\s*\(/.test(message)) {
-		alert("Code-like messages are not allowed in chat.");
-		return;
-	}
+	const message = input.value.trim();
+	if (!message) return;
+
 	input.value = "";
+	input.disabled = true;
+	document.querySelector('button[type="submit"]').disabled = true;
 
 	appendMessage("user", message);
-	const assistantDiv = appendMessage("assistant", "");
+	const assistantDiv = appendMessage("assistant", "⏳ thinking...");
 
-	// Call backend API
+	// Add user turn to history BEFORE sending
+	conversationHistory.push({ role: "user", content: message });
+
 	try {
 		const response = await fetch("http://localhost:3000/api/ask", {
 			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			},
-			body: JSON.stringify({ question: message })
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				question: message,
+				conversation: conversationHistory.slice(-20)  // last 20 turns max
+			})
 		});
-		console.log("API response status:", response.status);
+
 		if (!response.ok) {
-			assistantDiv.textContent = "[Error: Backend unavailable]";
+			const err = await response.text();
+			assistantDiv.textContent = `[Backend error ${response.status}]: ${err}`;
+			conversationHistory.pop(); // remove failed user turn
 			return;
 		}
+
 		const data = await response.json();
-		console.log("API response data:", data);
-		if (data.response) {
-			assistantDiv.textContent = data.response;
-		} else if (data.error) {
-			assistantDiv.textContent = `[Error: ${data.error}]`;
-		} else {
-			assistantDiv.textContent = "[No response]";
-		}
+		const reply = data.response || "[No response]";
+
+		assistantDiv.textContent = reply;
+
+		// Add assistant turn to history so next message carries context
+		conversationHistory.push({ role: "assistant", content: reply });
+
 		chat.scrollTop = chat.scrollHeight;
 	} catch (e) {
 		console.error("Network or fetch error", e);
-		assistantDiv.textContent = "[Network error]";
+		assistantDiv.textContent = "[Network error — is the server running?]";
+		conversationHistory.pop(); // remove failed user turn
+	} finally {
+		input.disabled = false;
+		document.querySelector('button[type="submit"]').disabled = false;
+		input.focus();
 	}
 }
 
 document.getElementById('clearBtn').onclick = function() {
-	const chat = document.getElementById('chat');
-	chat.innerHTML = '';
+	document.getElementById('chat').innerHTML = '';
+	conversationHistory = [];  // also wipe in-memory history on clear
 };
 
-// Attach submit event listener in JS (robust, never reloads)
 document.querySelector('form.input-container').addEventListener('submit', sendMessage);
 </script>
 

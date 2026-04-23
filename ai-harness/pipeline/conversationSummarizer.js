@@ -5,22 +5,15 @@
  * Conversation Summarizer
  * @param {Object} params
  * @param {Array<Object>} params.messages - Conversation messages [{role, content}]
- * @returns {string} Conversation summary
+ * @returns {{ conversation_summary: string }} Summary object
  */
 function conversationSummarizer({ messages = [] }) {
-  // Simple summary: concatenate last 3 messages
-  const last = messages.slice(-3).map(m => `[${m.role}] ${m.content}`).join(' ');
-  return `Summary: ${last}`;
+  if (!messages.length) return { conversation_summary: '' };
+  const lines = messages
+    .slice(-6)  // last 6 turns max
+    .map(m => `[${m.role}] ${m.content}`)
+    .join(' | ');
+  return { conversation_summary: lines };
 }
 
-module.exports = conversationSummarizer;
-
-// Example usage:
-// const summary = conversationSummarizer({
-//   messages: [
-//     { role: 'user', content: 'Hi' },
-//     { role: 'assistant', content: 'Hello!' },
-//     { role: 'user', content: 'Summarize my projects' }
-//   ]
-// });
-// console.log(summary);
+module.exports = conversationSummarizer;

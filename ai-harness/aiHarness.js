@@ -20,7 +20,7 @@ async function aiHarness({ userMessage, conversation = [], availableFunctions = 
     trace.analysis = await requirementAnalyzer({
       userMessage,
       availableFunctions,
-      memorySummary: await loadMemorySummary()
+      memory: await loadMemorySummary()  // Bug #1 fix: was memorySummary (ignored)
     });
 
     // 2. Memory Retrieval
@@ -43,16 +43,21 @@ async function aiHarness({ userMessage, conversation = [], availableFunctions = 
       functionRegistry
     });
 
-    // 5. Context Builder
+    // 5. Conversation Summarizer — runs BEFORE context builder so summary feeds into prompt
+    trace.conversationSummary = conversationSummarizer({
+      messages: conversation.slice(-10)  // Bug #6 fix: was 'conversation' (ignored by fn)
+    });
+
+    // 6. Context Builder
     trace.context = contextBuilder({
       userMessage,
       memory: trace.memory,
-      conversationSummary: '', // Will update after summarizer
+      conversationSummary: trace.conversationSummary.conversation_summary || '',
       recentMessages: conversation.slice(-5),
       functionResults: trace.functionResults
     });
 
-    // 6. Response Generator
+    // 7. Response Generator — actual LLM call
     trace.response = await responseGenerator({
       userMessage,
       context: trace.context,
@@ -60,34 +65,26 @@ async function aiHarness({ userMessage, conversation = [], availableFunctions = 
       functionResults: trace.functionResults
     });
 
-    // 7. Memory Extractor
+    // 8. Memory Extractor
     trace.extractedMemory = memoryExtractor({
       userMessage,
-      aiResponse: trace.response
+      context: trace.context
     });
 
-    // 8. Memory Compressor
+    // 9. Memory Compressor
     trace.compressedMemory = memoryCompressor({
       memory: trace.extractedMemory
     });
 
-    // 9. Memory Storage
+    // 10. Memory Storage — persists extracted facts to memory.json
     await memoryStorage({
-      compressed_memory: trace.compressedMemory.compressed_memory,
+      memory: trace.compressedMemory,
       memoryPath: MEMORY_PATH
     });
 
-    // 10. Conversation Summarizer
-    trace.conversationSummary = conversationSummarizer({
-      conversation: conversation.concat({ role: 'user', content: userMessage }, { role: 'assistant', content: trace.response }),
-      maxMessages: 10
-    });
-
-    // Update context with new summary
-    trace.context.conversation_summary = trace.conversationSummary.conversation_summary;
-
     return {
       response: trace.response,
+      conversationTurn: { role: 'assistant', content: trace.response },  // For frontend history
       trace
     };
   } catch (err) {
