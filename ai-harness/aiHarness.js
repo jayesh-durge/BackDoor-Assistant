@@ -1,107 +1,111 @@
-// aiHarness.js
-// Main controller: orchestrates the full Copilot-style flow
-
-const fs = require('fs');
+const requirementAnalyzer = require('./pipeline/requirementAnalyzer');
+const memoryRetriever = require('./pipeline/memoryRetriever');
+const functionPlanner = require('./pipeline/functionPlanner');
+const functionExecutor = require('./pipeline/functionExecutor');
+const contextBuilder = require('./pipeline/contextBuilder');
+const responseGenerator = require('./pipeline/responseGenerator');
+const memoryExtractor = require('./pipeline/memoryExtractor');
+const memoryCompressor = require('./pipeline/memoryCompressor');
+const memoryStorage = require('./pipeline/memoryStorage');
+const conversationSummarizer = require('./pipeline/conversationSummarizer');
+const fs = require('fs').promises;
 const path = require('path');
 
-const classifyIntent = require('./intentClassifier');
-const selectContext = require('./contextSelector');
-const loadContext = require('./contextLoader');
-const finalResponder = require('./finalResponder');
-const extractMemory = require('./memoryExtractor');
-const memoryManager = require('./memoryManager');
-const loadRelevantMemory = require('./memoryLoader');
-const history = require('./utils/history');
+const MEMORY_PATH = path.join(__dirname, 'memory.json');
 
-async function main(userInput) {
-  // Load user context (static)
-  const userContextPath = path.join(__dirname, 'userContext.json');
-  let userContext = {};
+async function aiHarness({ userMessage, conversation = [], availableFunctions = [], functionRegistry = {} }) {
+  const trace = {};
   try {
-    userContext = JSON.parse(fs.readFileSync(userContextPath, 'utf-8'));
-  } catch (e) {
-    console.error('[AIHarness] Failed to load userContext.json:', e);
-    userContext = {};
-  }
-
-  // Step 1: Memory Extraction (AI Call #1)
-  let extractedMemory = {};
-  try {
-    extractedMemory = await extractMemory(userInput);
-  } catch (e) {
-    console.error('[AIHarness] Memory extraction failed:', e);
-    extractedMemory = {};
-  }
-
-  // Step 2: Merge and Update memory.json
-  let memory = memoryManager.loadMemory();
-  let mergedMemory = memoryManager.mergeMemory(memory, extractedMemory);
-  memoryManager.saveMemory(mergedMemory);
-  console.log('[AIHarness] Merged memory:', mergedMemory);
-
-  // Step 3: Append user message to conversation history
-  history.appendHistory('user', userInput);
-  console.log('[AIHarness] Appended user message to history:', userInput);
-
-  // Step 4: Detect intent (AI Call #2)
-  const intent = await classifyIntent(userInput);
-  console.log('[AIHarness] Detected intent:', intent);
-  if (!intent || intent === 'unknown') {
-    return 'Sorry, I could not understand your request.';
-  }
-
-  // Step 5: Select required context
-  const contextTypes = selectContext(intent);
-  console.log('[AIHarness] Context types selected:', contextTypes);
-
-  // Step 6: Load minimal required static context
-  const loadedContext = await loadContext(contextTypes);
-  console.log('[AIHarness] Loaded context:', loadedContext);
-
-  // Step 7: Load relevant memory context (AI Call #3)
-  let relevantMemory = {};
-  try {
-    relevantMemory = await loadRelevantMemory(userInput);
-  } catch (e) {
-    console.error('[AIHarness] Failed to load relevant memory:', e);
-    relevantMemory = {};
-  }
-  console.log('[AIHarness] Relevant memory:', relevantMemory);
-
-  // Step 8: Merge static and memory context
-  const mergedContext = { ...loadedContext, memory: relevantMemory };
-  console.log('[AIHarness] Merged context:', mergedContext);
-
-  // Step 9: Load recent conversation history (last 20 turns)
-  let conversation_history = [];
-  const mem = history.loadMemory();
-  if (mem && Array.isArray(mem.conversation_history)) {
-    conversation_history = mem.conversation_history.slice(-20);
-  }
-  console.log('[AIHarness] Conversation history:', conversation_history);
-
-  // Step 10: Call final responder (streaming AI), passing history
-  let aiResponse;
-  try {
-    aiResponse = await finalResponder({
-      userInput,
-      mergedContext,
-      userContext,
-      conversation_history,
-      memory: mem
+    // 1. Requirement Analyzer
+    trace.analysis = await requirementAnalyzer({
+      userMessage,
+      availableFunctions,
+      memorySummary: await loadMemorySummary()
     });
-    if (!aiResponse || typeof aiResponse !== 'string' || !aiResponse.trim()) {
-      console.error('[AIHarness] AI response is empty or invalid:', aiResponse);
-      aiResponse = '[AI Error] No response generated.';
-    }
-  } catch (e) {
-    console.error('[AIHarness] Error in finalResponder:', e);
-    aiResponse = '[AI Error] ' + (e.message || e.toString());
+
+    // 2. Memory Retrieval
+    trace.memory = await memoryRetriever({
+      query: userMessage,
+      memoryPath: MEMORY_PATH,
+      topK: 2
+    });
+
+    // 3. Function Planner
+    trace.plan = await functionPlanner({
+      userMessage,
+      analysis: trace.analysis,
+      availableFunctions
+    });
+
+    // 4. Function Execution
+    trace.functionResults = await functionExecutor({
+      planned_functions: trace.plan.functions,
+      functionRegistry
+    });
+
+    // 5. Context Builder
+    trace.context = contextBuilder({
+      userMessage,
+      memory: trace.memory,
+      conversationSummary: '', // Will update after summarizer
+      recentMessages: conversation.slice(-5),
+      functionResults: trace.functionResults
+    });
+
+    // 6. Response Generator
+    trace.response = await responseGenerator({
+      userMessage,
+      context: trace.context,
+      memory: trace.memory,
+      functionResults: trace.functionResults
+    });
+
+    // 7. Memory Extractor
+    trace.extractedMemory = memoryExtractor({
+      userMessage,
+      aiResponse: trace.response
+    });
+
+    // 8. Memory Compressor
+    trace.compressedMemory = memoryCompressor({
+      memory: trace.extractedMemory
+    });
+
+    // 9. Memory Storage
+    await memoryStorage({
+      compressed_memory: trace.compressedMemory.compressed_memory,
+      memoryPath: MEMORY_PATH
+    });
+
+    // 10. Conversation Summarizer
+    trace.conversationSummary = conversationSummarizer({
+      conversation: conversation.concat({ role: 'user', content: userMessage }, { role: 'assistant', content: trace.response }),
+      maxMessages: 10
+    });
+
+    // Update context with new summary
+    trace.context.conversation_summary = trace.conversationSummary.conversation_summary;
+
+    return {
+      response: trace.response,
+      trace
+    };
+  } catch (err) {
+    return {
+      response: '[AI Harness Error] ' + (err.message || err.toString()),
+      trace,
+      error: err
+    };
   }
-  // Step 11: Append assistant response to conversation history
-  history.appendHistory('assistant', aiResponse);
-  console.log('[AIHarness] Appended assistant response to history:', aiResponse);
-  return aiResponse;
 }
 
-module.exports = main;
+async function loadMemorySummary() {
+  try {
+    const data = await fs.readFile(MEMORY_PATH, 'utf8');
+    return JSON.parse(data);
+  } catch {
+    return {};
+  }
+}
+
+module.exports = aiHarness;

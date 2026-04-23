@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
-const aiHarness = require('./ai-harness/aiHarness');
+const mainHarness = require('./ai-harness/mainHarness');
 
 const app = express();
 const PORT = 3000;
@@ -14,15 +14,23 @@ app.use(bodyParser.json());
 // Serve static files (including index.html) from the project root
 app.use(express.static(__dirname));
 
+
 // POST /api/ask - expects { question: "..." }
 app.post('/api/ask', async (req, res) => {
-  const { question } = req.body;
+  const { question, conversation, availableFunctions, functionRegistry, memoryStore } = req.body;
   if (!question || typeof question !== 'string' || !question.trim()) {
     return res.status(400).json({ error: 'Invalid or empty question.' });
   }
   try {
-    const response = await aiHarness(question.trim());
-    res.json({ response });
+    // For demo: fallback to empty or default values if not provided
+    const result = await mainHarness({
+      userMessage: question.trim(),
+      conversation: Array.isArray(conversation) ? conversation : [],
+      availableFunctions: Array.isArray(availableFunctions) ? availableFunctions : [],
+      functionRegistry: typeof functionRegistry === 'object' && functionRegistry !== null ? functionRegistry : {},
+      memoryStore: typeof memoryStore === 'object' && memoryStore !== null ? memoryStore : {}
+    });
+    res.json({ response: result.response, trace: result.trace });
   } catch (err) {
     console.error('[SERVER ERROR]', err);
     res.status(500).json({ error: 'AI harness error', details: err.message, stack: err.stack });
