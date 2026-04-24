@@ -36,10 +36,12 @@ app.post('/api/ask', async (req, res) => {
       functionRegistry: typeof functionRegistry === 'object' && functionRegistry !== null ? functionRegistry : {},
       memoryStore: typeof memoryStore === 'object' && memoryStore !== null ? memoryStore : {},
       onChunk: (chunk) => {
-        res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
+        // Sanitize chunk: ensure it's a string to prevent [object Object] on frontend
+        const safeChunk = typeof chunk === 'object' ? JSON.stringify(chunk) : chunk;
+        res.write(`data: ${JSON.stringify({ chunk: safeChunk })}\n\n`);
       }
     });
-    res.write(`data: ${JSON.stringify({ trace: result.trace, finalResponse: result.response })}\n\n`);
+    res.write(`data: ${JSON.stringify({ finalResponse: result.response })}\n\n`);
     res.end();
   } catch (err) {
     console.error('[SERVER ERROR]', err);

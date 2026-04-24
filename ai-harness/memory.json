@@ -1,9 +1,42 @@
 {
-  "skills": [],
-  "interests": [],
-  "projects": [],
-  "preferences": [],
-  "goals": [],
+  "skills": [
+    "front-end development with HTML, CSS, JS, and React",
+    "front-end development (HTML, CSS, JS, React)",
+    "cybersecurity basics",
+    "networking",
+    "C++ programming",
+    "programming",
+    "data structures",
+    "C++"
+  ],
+  "interests": [
+    "programming",
+    "programming and software development",
+    "C++"
+  ],
+  "projects": [
+    "Graph Plotter (C++), HTTP Server (C++), Mini Browser Project, Rendering Pipeline, Chess Engine, Custom Version Control System, Sandbox Project, Online Coding Contest Platform, C++ Compiler Pipeline",
+    "Graph Plotter, HTTP Server, Mini Browser Project, Rendering Pipeline, Chess Engine, Custom Version Control System, Sandbox Project, Online Coding Contest Platform, C++ Compiler Pipeline",
+    "graph plotting",
+    "server development",
+    "browser development",
+    "game development",
+    "version control systems",
+    "competitive programming",
+    "compiler design",
+    "C++ related projects",
+    "C++ development",
+    "prime number generation",
+    "finding prime numbers",
+    "generating prime numbers"
+  ],
+  "preferences": [
+    "response format",
+    "grammar correction"
+  ],
+  "goals": [
+    "strengthening knowledge in systems and back-end development"
+  ],
   "user_profile": [],
   "conversation_summary": []
 }
