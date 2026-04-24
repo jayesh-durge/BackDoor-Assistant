@@ -13,7 +13,7 @@ const path = require('path');
 
 const MEMORY_PATH = path.join(__dirname, 'memory.json');
 
-async function aiHarness({ userMessage, conversation = [], availableFunctions = [], functionRegistry = {} }) {
+async function aiHarness({ userMessage, conversation = [], availableFunctions = [], functionRegistry = {}, onChunk }) {
   const trace = {};
   try {
     // 1. Requirement Analyzer
@@ -62,7 +62,8 @@ async function aiHarness({ userMessage, conversation = [], availableFunctions = 
       userMessage,
       context: trace.context,
       memory: trace.memory,
-      functionResults: trace.functionResults
+      functionResults: trace.functionResults,
+      onChunk
     });
 
     // 8. Memory Extractor — semantic LLM call, needs the actual AI response text

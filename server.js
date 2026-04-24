@@ -21,6 +21,12 @@ app.post('/api/ask', async (req, res) => {
   if (!question || typeof question !== 'string' || !question.trim()) {
     return res.status(400).json({ error: 'Invalid or empty question.' });
   }
+
+  // Set up SSE headers
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
   try {
     // For demo: fallback to empty or default values if not provided
     const result = await mainHarness({
@@ -28,12 +34,17 @@ app.post('/api/ask', async (req, res) => {
       conversation: Array.isArray(conversation) ? conversation.slice(-6) : [],
       availableFunctions: Array.isArray(availableFunctions) ? availableFunctions : [],
       functionRegistry: typeof functionRegistry === 'object' && functionRegistry !== null ? functionRegistry : {},
-      memoryStore: typeof memoryStore === 'object' && memoryStore !== null ? memoryStore : {}
+      memoryStore: typeof memoryStore === 'object' && memoryStore !== null ? memoryStore : {},
+      onChunk: (chunk) => {
+        res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
+      }
     });
-    res.json({ response: result.response, trace: result.trace });
+    res.write(`data: ${JSON.stringify({ trace: result.trace, finalResponse: result.response })}\n\n`);
+    res.end();
   } catch (err) {
     console.error('[SERVER ERROR]', err);
-    res.status(500).json({ error: 'AI harness error', details: err.message, stack: err.stack });
+    res.write(`data: ${JSON.stringify({ error: 'AI harness error', details: err.message })}\n\n`);
+    res.end();
   }
 });
 

@@ -15,7 +15,7 @@ const config = require('../../config');
  * @param {Object} params.functionResults  - Results from any executed tools
  * @returns {Promise<string>} The model's reply text
  */
-async function responseGenerator({ userMessage, context = {}, memory = {}, functionResults = {} }) {
+async function responseGenerator({ userMessage, context = {}, memory = {}, functionResults = {}, onChunk }) {
   const { apiKey, model, siteUrl, siteName, baseUrl } = config.openrouter;
 
   // ── Build memory block for prompt ─────────────────────────────────────────
@@ -98,7 +98,7 @@ Generate a helpful response.`;
       'HTTP-Referer':    siteUrl,
       'X-Title':         siteName
     },
-    body: JSON.stringify({ model, messages })
+    body: JSON.stringify({ model, messages, stream: !!onChunk })
   });
 
   if (!res.ok) {
@@ -106,11 +106,42 @@ Generate a helpful response.`;
     throw new Error(`OpenRouter API error ${res.status}: ${errText}`);
   }
 
-  const data = await res.json();
-  const reply = data?.choices?.[0]?.message?.content;
-  if (!reply) throw new Error('Empty response from model: ' + JSON.stringify(data));
-
-  return reply;
+  if (onChunk) {
+    return new Promise((resolve, reject) => {
+      let fullReply = '';
+      let buffer = '';
+      res.body.on('data', (chunk) => {
+        buffer += chunk.toString();
+        let lastIndex = 0;
+        while (true) {
+          const newLineIndex = buffer.indexOf('\n', lastIndex);
+          if (newLineIndex === -1) break;
+          const line = buffer.slice(lastIndex, newLineIndex).trim();
+          lastIndex = newLineIndex + 1;
+          if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+            try {
+              const data = JSON.parse(line.slice(6));
+              const token = data.choices[0]?.delta?.content || '';
+              if (token) {
+                fullReply += token;
+                onChunk(token);
+              }
+            } catch (e) {
+              // Ignore partial JSON parse errors
+            }
+          }
+        }
+        buffer = buffer.slice(lastIndex);
+      });
+      res.body.on('end', () => resolve(fullReply));
+      res.body.on('error', reject);
+    });
+  } else {
+    const data = await res.json();
+    const reply = data?.choices?.[0]?.message?.content;
+    if (!reply) throw new Error('Empty response from model: ' + JSON.stringify(data));
+    return reply;
+  }
 }
 
 module.exports = responseGenerator;

@@ -123,10 +123,42 @@ async function sendMessage(event) {
 			return;
 		}
 
-		const data = await response.json();
-		const reply = data.response || "[No response]";
+		assistantDiv.textContent = "";
+		let reply = "";
 
-		assistantDiv.textContent = reply;
+		const reader = response.body.getReader();
+		const decoder = new TextDecoder();
+		let buffer = "";
+
+		while (true) {
+			const { value, done } = await reader.read();
+			if (done) break;
+			buffer += decoder.decode(value, { stream: true });
+			
+			let parts = buffer.split("\n\n");
+			buffer = parts.pop(); // keep the last incomplete chunk in buffer
+			
+			for (const part of parts) {
+				if (part.startsWith("data: ")) {
+					try {
+						const data = JSON.parse(part.slice(6));
+						if (data.error) {
+							assistantDiv.textContent += "\n[Error] " + data.details;
+						} else if (data.chunk) {
+							reply += data.chunk;
+							assistantDiv.textContent = reply;
+							chat.scrollTop = chat.scrollHeight;
+						} else if (data.finalResponse) {
+							// final data
+							reply = data.finalResponse;
+							assistantDiv.textContent = reply;
+						}
+					} catch (e) {
+						// Parse error, ignore partial
+					}
+				}
+			}
+		}
 
 		// Add assistant turn to history so next message carries context
 		conversationHistory.push({ role: "assistant", content: reply });
