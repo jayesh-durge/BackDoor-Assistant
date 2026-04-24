@@ -10,12 +10,15 @@
     "C++",
     "C and C++ programming",
     "coding in C, C++, Python",
-    "C++ development"
+    "C++ development",
+    "Java"
   ],
   "interests": [
     "programming",
     "programming and software development",
-    "C++"
+    "C++",
+    "OpenGL",
+    "chatbot development"
   ],
   "projects": [
     "Graph Plotter (C++), HTTP Server (C++), Mini Browser Project, Rendering Pipeline, Chess Engine, Custom Version Control System, Sandbox Project, Online Coding Contest Platform, C++ Compiler Pipeline",
@@ -35,11 +38,14 @@
     "checking prime numbers",
     "graph plotting, HTTP server, mini browser, rendering pipeline, chess engine, custom version control system, sandbox project, online coding contest platform, C++ compiler pipeline",
     "graph and web-related applications",
-    "OpenGL graphics programming"
+    "OpenGL graphics programming",
+    "Java applets",
+    "ChatGPT integration"
   ],
   "preferences": [
     "response format",
-    "grammar correction"
+    "grammar correction",
+    "wants to be addressed as Jayesh Sir"
   ],
   "goals": [
     "strengthening knowledge in systems and back-end development"
