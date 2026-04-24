@@ -3,26 +3,24 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Findly AI | Assistant</title>
+    <title>BackDoor | Private AI</title>
     
     <!-- External Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #10b981;
-            --glass: rgba(30, 41, 59, 0.7);
-            --border: rgba(255, 255, 255, 0.1);
-            --copy-bg: rgba(99, 102, 241, 0.1);
+            --primary: #FFD400;
+            --primary-hover: #EBBF00;
+            --bg-cream: #FDFCF7;
+            --black: #000000;
+            --white: #FFFFFF;
+            --text-muted: #666666;
+            --border: rgba(0, 0, 0, 0.1);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
         }
 
         * {
@@ -33,223 +31,228 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-main);
+            background-color: var(--bg-cream);
+            color: var(--black);
             height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 2px 2px, rgba(0,0,0,0.03) 1px, transparent 0);
+            background-size: 40px 40px;
+            position: relative;
         }
 
-        /* Header */
+        /* --- Background Watermark --- */
+        .bg-watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-5deg);
+            font-size: 20vw;
+            font-weight: 900;
+            color: rgba(0, 0, 0, 0.03);
+            text-transform: uppercase;
+            letter-spacing: -0.05em;
+            pointer-events: none;
+            z-index: 0;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        /* --- Header --- */
         header {
-            padding: 1rem 2rem;
-            background: var(--glass);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 3rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            z-index: 10;
+            z-index: 100;
+            background: rgba(253, 252, 247, 0.8);
+            backdrop-filter: blur(10px);
         }
 
         .logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            background: linear-gradient(to right, #818cf8, #c084fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.025em;
+            font-size: 1.25rem;
+            font-weight: 900;
+            letter-spacing: -0.05em;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        /* Chat Area */
+        .logo-box {
+            width: 24px;
+            height: 24px;
+            background: var(--black);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 0.8rem;
+        }
+
+        nav {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--black);
+            opacity: 0.5;
+            transition: opacity 0.2s;
+            cursor: pointer;
+        }
+
+        nav a:hover { opacity: 1; }
+
+        /* --- Chat Main --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
         .chat-container {
             flex: 1;
             overflow-y: auto;
             padding: 2rem;
-            scroll-behavior: smooth;
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
+            scroll-behavior: smooth;
+            height: 0;
         }
 
+        .chat-container::-webkit-scrollbar { width: 5px; }
+        .chat-container::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+
+        /* --- Messages --- */
         .message {
-            max-width: 90%;
-            padding: 1.25rem;
-            border-radius: 16px;
-            position: relative;
-            animation: fadeIn 0.3s ease-out;
-            line-height: 1.6;
+            max-width: 80%;
+            padding: 1.25rem 1.5rem;
+            border-radius: 20px;
             font-size: 0.95rem;
+            line-height: 1.6;
+            animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         .user {
             align-self: flex-end;
-            background: var(--primary);
-            color: white;
+            background: var(--black);
+            color: var(--white);
             border-bottom-right-radius: 4px;
         }
 
         .assistant {
             align-self: flex-start;
-            background: var(--bg-card);
+            background: var(--white);
+            color: var(--black);
             border: 1px solid var(--border);
+            box-shadow: var(--shadow);
             border-bottom-left-radius: 4px;
-            min-width: 200px;
         }
 
-        /* Copyable Block System Styles */
-        .copyable-block {
-            background: var(--copy-bg);
-            border: 1px solid rgba(99, 102, 241, 0.3);
+        /* --- Code Blocks --- */
+        .code-wrapper {
+            background: #111;
             border-radius: 12px;
-            margin: 1rem 0;
             overflow: hidden;
-            transition: transform 0.2s;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin: 1rem 0;
         }
 
-        .copyable-block:hover {
-            transform: translateY(-2px);
-            border-color: var(--primary);
-        }
-
-        .block-header {
+        .code-header {
+            padding: 0.6rem 1rem;
+            background: rgba(255,255,255,0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.5rem 1rem;
-            background: rgba(99, 102, 241, 0.15);
-            font-weight: 600;
-            font-size: 0.8rem;
-            color: var(--text-main);
-            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
-        }
-
-        .block-content {
-            padding: 1rem;
-            font-size: 0.9rem;
+            font-size: 0.75rem;
+            font-family: monospace;
+            color: #888;
         }
 
         .copy-btn {
             background: var(--primary);
-            color: white;
+            color: var(--black);
             border: none;
-            padding: 4px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 4px;
             font-weight: 700;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .copy-btn:hover {
-            background: var(--primary-hover);
-            transform: scale(1.05);
-        }
-
-        .copy-btn.feedback {
-            background: var(--accent);
-        }
-
-        /* Code Block Enhancement */
-        .code-wrapper {
-            margin: 1rem 0;
-            border-radius: 12px;
-            overflow: hidden;
-            background: #0d1117;
-            border: 1px solid var(--border);
-        }
-
-        .code-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.5rem 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            font-family: monospace;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            border-bottom: 1px solid var(--border);
-        }
-
-        pre { margin: 0 !important; padding: 1rem !important; background: transparent !important; }
-        code { font-family: 'Fira Code', monospace; }
-
-        /* Assistant Actions */
-        .assistant-actions {
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border);
-            display: flex;
-            gap: 10px;
-        }
-
-        .action-btn {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-muted);
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.75rem;
             cursor: pointer;
-            transition: all 0.2s;
+            font-size: 0.7rem;
+            transition: transform 0.2s;
         }
 
-        .action-btn:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-main);
-            border-color: var(--text-muted);
-        }
+        .copy-btn:hover { transform: scale(1.05); }
 
-        /* Input Bar */
+        /* --- Input Section --- */
         .input-wrapper {
-            padding: 1.5rem 2rem;
-            background: var(--bg-dark);
-            border-top: 1px solid var(--border);
+            padding: 2rem 3rem 3rem;
         }
 
-        .input-container {
-            max-width: 900px;
-            margin: 0 auto;
-            display: flex;
-            gap: 0.75rem;
-            background: var(--bg-card);
-            padding: 0.5rem;
-            border-radius: 12px;
+        .input-box {
+            background: var(--white);
             border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 0.6rem 0.6rem 0.6rem 1.5rem;
+            display: flex;
+            align-items: center;
+            box-shadow: var(--shadow);
+            transition: border-color 0.2s;
         }
+
+        .input-box:focus-within { border-color: var(--black); }
 
         input {
             flex: 1;
-            padding: 0.75rem 1rem;
-            background: transparent;
             border: none;
-            color: var(--text-main);
+            background: transparent;
             outline: none;
             font-size: 1rem;
+            font-weight: 500;
+            color: var(--black);
         }
 
         #sendBtn {
             background: var(--primary);
-            color: white;
+            color: var(--black);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
+            font-weight: 900;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
         }
 
-        /* Thinking Animation */
+        #sendBtn:hover { transform: scale(1.1); background: var(--black); color: var(--primary); }
+
+
+        /* Thinking indicator */
         .thinking { display: flex; gap: 4px; padding: 4px 0; }
-        .dot { width: 8px; height: 8px; background: var(--text-muted); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out; }
+        .dot { width: 8px; height: 8px; background: var(--primary); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out; }
         .dot:nth-child(2) { animation-delay: 0.2s; }
         .dot:nth-child(3) { animation-delay: 0.4s; }
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
@@ -257,72 +260,45 @@
 </head>
 
 <body>
+    <div class="bg-watermark">BACKDOOR</div>
 
     <header>
-        <div class="logo">Findly AI</div>
-        <button onclick="clearChat()" id="clearBtn" style="background:transparent; border:1px solid var(--border); color:var(--text-muted); padding:6px 12px; border-radius:6px; cursor:pointer;">Clear Chat</button>
+        <div class="logo">
+            <div class="logo-box">B</div>
+            BackDoor Assistant
+        </div>
     </header>
 
-    <div class="chat-container" id="chat"></div>
+    <div class="main-content">
+        <div class="chat-container" id="chat"></div>
 
-    <div class="input-wrapper">
-        <form class="input-container" id="chatForm">
-            <input id="input" placeholder="Ask anything..." autocomplete="off" />
-            <button type="submit" id="sendBtn">Send</button>
-        </form>
+        <div class="input-wrapper">
+            <form class="input-box" id="chatForm">
+                <input id="input" placeholder="Initiate encrypted session..." autocomplete="off" />
+                <button type="submit" id="sendBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </form>
+        </div>
     </div>
 
     <script>
-        // --- 1. Clipboard Utility ---
+        // --- 1. Utilities ---
         async function copyToClipboard(text, btn) {
             try {
-                if (navigator.clipboard && window.isSecureContext) {
-                    await navigator.clipboard.writeText(text);
-                } else {
-                    const textArea = document.createElement("textarea");
-                    textArea.value = text;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                }
-                
+                await navigator.clipboard.writeText(text);
                 const originalText = btn.innerHTML;
-                btn.innerHTML = '✓ Copied!';
-                btn.classList.add('feedback');
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.classList.remove('feedback');
-                }, 2000);
-            } catch (err) {
-                console.error('Copy failed', err);
-            }
+                btn.innerHTML = 'COPIED';
+                setTimeout(() => btn.innerHTML = originalText, 2000);
+            } catch (err) { console.error('Copy failed', err); }
         }
 
-        // --- 2. Markdown & Extraction Logic ---
+
+        // --- 2. Markdown & Render ---
         const renderer = new marked.Renderer();
-
-        // Safe Text Extraction (Handles OpenAI, Gemini, and custom formats)
-        function extractText(chunk) {
-            if (!chunk) return "";
-            if (typeof chunk === "string") return chunk;
-
-            // Priority: Extract ONLY user-visible content
-            return (
-                chunk.chunk || 
-                chunk.text || 
-                chunk.content || 
-                (chunk.candidates && chunk.candidates[0]?.content?.parts && chunk.candidates[0].content.parts[0]?.text) ||
-                (chunk.choices && chunk.choices[0]?.delta?.content) ||
-                "" // Fallback to empty string for internal fields like 'trace' or 'plan'
-            );
-        }
-
-        // Custom Code Block Renderer
         renderer.code = function(tokenOrCode, language) {
             const code = typeof tokenOrCode === 'object' ? tokenOrCode.text : tokenOrCode;
             const lang = typeof tokenOrCode === 'object' ? tokenOrCode.lang : language;
-            
             const validLang = !!(lang && hljs.getLanguage(lang));
             const highlighted = validLang ? hljs.highlight(code, { language: lang }).value : code;
             const blockId = 'code-' + Math.random().toString(36).substr(2, 9);
@@ -330,8 +306,8 @@
             return `
                 <div class="code-wrapper">
                     <div class="code-header">
-                        <span>${lang || 'code'}</span>
-                        <button class="copy-btn" onclick="copyCodeFromElement('${blockId}', this)">Copy</button>
+                        <span>${lang || 'CODE'}</span>
+                        <button class="copy-btn" onclick="copyCodeFromElement('${blockId}', this)">COPY</button>
                     </div>
                     <pre><code id="${blockId}" class="hljs ${lang}">${highlighted}</code></pre>
                 </div>
@@ -340,20 +316,21 @@
 
         marked.setOptions({ renderer, breaks: true, gfm: true });
 
-        // --- 3. Chat State & Streaming ---
+        function extractText(chunk) {
+            if (!chunk) return "";
+            if (typeof chunk === "string") return chunk;
+            try {
+                return chunk.chunk || chunk.text || chunk.content || 
+                       (chunk.candidates && chunk.candidates[0]?.content?.parts && chunk.candidates[0].content.parts[0]?.text) ||
+                       (chunk.choices && chunk.choices[0]?.delta?.content) || "";
+            } catch (e) { return ""; }
+        }
+
+        // --- 3. Chat Logic ---
         let conversationHistory = [];
 
         function copyCodeFromElement(id, btn) {
-            const el = document.getElementById(id);
-            copyToClipboard(el.innerText, btn);
-        }
-
-        function copyAllMessage(btn) {
-            const messageDiv = btn.closest('.assistant');
-            const clone = messageDiv.cloneNode(true);
-            const actions = clone.querySelector('.assistant-actions');
-            if (actions) actions.remove();
-            copyToClipboard(clone.innerText.trim(), btn);
+            copyToClipboard(document.getElementById(id).innerText, btn);
         }
 
         function appendMessage(role, content, isThinking = false) {
@@ -364,30 +341,12 @@
             if (isThinking) {
                 div.innerHTML = `<div class="thinking"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
             } else {
-                updateMessageDisplay(div, content, role);
+                div.innerHTML = role === 'assistant' ? marked.parse(content) : content;
             }
             
             chat.appendChild(div);
             chat.scrollTop = chat.scrollHeight;
             return div;
-        }
-
-        function updateMessageDisplay(container, content, role) {
-            if (role === 'user') {
-                container.textContent = content;
-                return;
-            }
-
-            // Safe Markdown Render
-            container.innerHTML = marked.parse(content);
-
-            // Add "Copy All" footer
-            if (!container.querySelector('.assistant-actions')) {
-                const actions = document.createElement('div');
-                actions.className = 'assistant-actions';
-                actions.innerHTML = `<button class="action-btn" onclick="copyAllMessage(this)">Copy All Response</button>`;
-                container.appendChild(actions);
-            }
         }
 
         async function sendMessage(event) {
@@ -416,7 +375,6 @@
                 assistantDiv.innerHTML = "";
                 let fullReply = "";
                 let streamBuffer = "";
-
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
 
@@ -432,30 +390,20 @@
                         if (line.startsWith("data: ")) {
                             try {
                                 const data = JSON.parse(line.slice(6));
-                                
-                                // 1. If it's a final response, it's the complete text
                                 if (data.finalResponse) {
                                     fullReply = data.finalResponse;
-                                    updateMessageDisplay(assistantDiv, fullReply, 'assistant');
-                                } 
-                                // 2. Otherwise, treat as an incremental chunk
-                                else {
-                                    const textChunk = extractText(data);
-                                    if (textChunk) {
-                                        fullReply += textChunk;
-                                        updateMessageDisplay(assistantDiv, fullReply, 'assistant');
-                                        document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
-                                    }
+                                } else {
+                                    fullReply += extractText(data);
                                 }
-                            } catch (e) {
-                                console.error("Parse error in stream", e);
-                            }
+                                assistantDiv.innerHTML = marked.parse(fullReply);
+                                chat.scrollTop = chat.scrollHeight;
+                            } catch (e) {}
                         }
                     }
                 }
                 conversationHistory.push({ role: "assistant", content: fullReply });
             } catch (e) {
-                assistantDiv.innerHTML = "Network error. Is the server running?";
+                assistantDiv.innerHTML = "Encryption link failed. Reconnect server.";
             } finally {
                 input.disabled = false;
                 input.focus();
@@ -469,9 +417,8 @@
 
         document.getElementById('chatForm').addEventListener('submit', sendMessage);
         
-        // Initial welcome
-        appendMessage('assistant', 'System Online. Streaming pipeline secured. How can I assist you?');
+        // Initial Greeting
+        appendMessage('assistant', 'Secure session initiated. How can I assist you today?');
     </script>
-
 </body>
 </html>
