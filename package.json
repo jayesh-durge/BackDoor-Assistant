@@ -1,4 +1,13 @@
 {
+  "name": "backdoor-assistant",
+  "version": "1.0.0",
+  "description": "AI Harness for context-driven chatbots",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "postinstall": "git update-index --skip-worktree ai-harness/memory.json || true"
+  },
   "dependencies": {
     "body-parser": "^2.2.2",
     "cors": "^2.8.6",

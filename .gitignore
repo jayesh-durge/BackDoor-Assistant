@@ -57,3 +57,4 @@ venv/
 # Windows
 *.bat~
 *.tmp
+memory.json
