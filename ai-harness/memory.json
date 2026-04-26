@@ -1,55 +1,9 @@
 {
-  "skills": [
-    "front-end development with HTML, CSS, JS, and React",
-    "front-end development (HTML, CSS, JS, React)",
-    "cybersecurity basics",
-    "networking",
-    "C++ programming",
-    "programming",
-    "data structures",
-    "C++",
-    "C and C++ programming",
-    "coding in C, C++, Python",
-    "C++ development",
-    "Java"
-  ],
-  "interests": [
-    "programming",
-    "programming and software development",
-    "C++",
-    "OpenGL",
-    "chatbot development"
-  ],
-  "projects": [
-    "Graph Plotter (C++), HTTP Server (C++), Mini Browser Project, Rendering Pipeline, Chess Engine, Custom Version Control System, Sandbox Project, Online Coding Contest Platform, C++ Compiler Pipeline",
-    "Graph Plotter, HTTP Server, Mini Browser Project, Rendering Pipeline, Chess Engine, Custom Version Control System, Sandbox Project, Online Coding Contest Platform, C++ Compiler Pipeline",
-    "graph plotting",
-    "server development",
-    "browser development",
-    "game development",
-    "version control systems",
-    "competitive programming",
-    "compiler design",
-    "C++ related projects",
-    "C++ development",
-    "prime number generation",
-    "finding prime numbers",
-    "generating prime numbers",
-    "checking prime numbers",
-    "graph plotting, HTTP server, mini browser, rendering pipeline, chess engine, custom version control system, sandbox project, online coding contest platform, C++ compiler pipeline",
-    "graph and web-related applications",
-    "OpenGL graphics programming",
-    "Java applets",
-    "ChatGPT integration"
-  ],
-  "preferences": [
-    "response format",
-    "grammar correction",
-    "wants to be addressed as Jayesh Sir"
-  ],
-  "goals": [
-    "strengthening knowledge in systems and back-end development"
-  ],
+  "skills": [],
+  "interests": [],
+  "projects": [],
+  "preferences": [],
+  "goals": [],
   "user_profile": [],
   "conversation_summary": []
 }
